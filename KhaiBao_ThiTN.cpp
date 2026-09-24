@@ -46,15 +46,7 @@ struct DsLOP{
 		}
 	}
 };
-// Tim Kiem Lop Theo Ma Lop (Tra ve vi tri trong màng neu thay, nguoc lai tra ve -1)
-int timKiemLop(DsLOP &dslop, string maLop) {
-    for (int i = 0; i < dslop.n; i++) {
-        if (dslop.nodes[i]->MALOP == maLop) {
-            return i;
-        }
-    }
-    return -1;
-}
+
 PTRSINHVIEN timKiemSV(DsLOP &dslop, string maSV) {
     for (int i = 0; i < dslop.n; i++) {
         PTRSINHVIEN p = dslop.nodes[i]->Dssv;
@@ -64,29 +56,6 @@ PTRSINHVIEN timKiemSV(DsLOP &dslop, string maSV) {
         }
     }
     return nullptr;
-}
-//1.Dang nhap dua vao ma sinh vien hoac ma giao vien
-int dangNhap(DsLOP &dslop, string &taiKhoanDangNhap) {
-    string user, pass;
-    cout << "Dang nhap" << endl;
-    cout << "Tai khoan (Ma SV/GV): "; cin >> user;
-    cout << "Mat khau: "; cin >> pass;
-
-    // Kiem tra quyen Giang vien
-    if (user == "GV" && pass == "GV") {
-        cout << "Dang nhap thanh cong voi quyen GIANG VIEN (Toan quyen).\n";
-        taiKhoanDangNhap = "GV";
-        return 1;
-	}PTRSINHVIEN sv = timKiemSV(dslop, user);
-	// Kiem tra quyen Sinh vien	
-    if (sv != nullptr && sv->data.PASSWORD == pass) {
-        cout << "Dang nhap thanh cong voi Sinh vien: "
-             << sv->data.HO << " " << sv->data.TEN << "\n";
-        taiKhoanDangNhap = sv->data.MASV;
-        return 2;
-    }
-	cout<<"Dang nhap khong thanh cong" <<endl;
-	return 0;
 }
 
 struct CAUHOI{
@@ -110,6 +79,75 @@ struct Node_MONHOC{
 	Node_MONHOC* left=nullptr;
 };
 typedef Node_MONHOC* treeMH;
+//1.Dang nhap dua vao ma sinh vien hoac ma giao vien
+int dangNhap(DsLOP &dslop, string &taiKhoanDangNhap) {
+    string user, pass;
+    cout << "Dang nhap" << endl;
+    cout << "Tai khoan (Ma SV/GV): "; cin >> user;
+    cout << "Mat khau: "; cin >> pass;
+
+    // Kiem tra quyen Giang vien
+    if (user == "GV" && pass == "GV") {
+        cout << "Dang nhap thanh cong voi quyen GIANG VIEN (Toan quyen).\n";
+        taiKhoanDangNhap = "GV";
+        return 1;
+	}PTRSINHVIEN sv = timKiemSV(dslop, user);
+	// Kiem tra quyen Sinh vien	
+    if (sv != nullptr && sv->data.PASSWORD == pass) {
+        cout << "Dang nhap thanh cong voi Sinh vien: "
+             << sv->data.HO << " " << sv->data.TEN << "\n";
+        taiKhoanDangNhap = sv->data.MASV;
+        return 2;
+    }
+	cout<<"Dang nhap khong thanh cong" <<endl;
+	return 0;
+}
+//cau b
+// Tim Kiem Lop Theo Ma Lop (Tra ve vi tri trong màng neu thay, nguoc lai tra ve -1)
+int timKiemLop(DsLOP &dslop, string maLop) {
+    for (int i = 0; i < dslop.n; i++) {
+        if (dslop.nodes[i]->MALOP == maLop) {
+            return i;
+        }
+    }
+    return -1;
+}
+void nhapLop(DsLOP &dslop) {
+    cout << "NHAP DANH SACH LOP \n";
+    while (true) {
+        // Kiem tra mang day
+        if (dslop.n >= MAX_LOP) {
+            cout << "Danh sach lop da day!\n";
+            break;
+        }
+
+        string maLop;
+        cout << "Nhap Ma Lop (Nhap '0' de dung): ";
+        cin >> maLop;
+        
+        if (maLop == "0") break;
+
+        // Kiem tra trung
+        if (timKiemLop(dslop, maLop) != -1) {
+            cout << "Ma lop '" << maLop << "' da ton tai! \n";
+            continue;
+        }
+
+        //lop moi
+        LOP* lopMoi = new LOP();
+        lopMoi->MALOP = maLop;
+        
+        cout << "Nhap Ten Lop: ";
+        cin.ignore(); // Xóa bộ đệm
+        getline(cin, lopMoi->TENLOP);
+
+        // Đưa con trỏ vào mảng và tăng số lượng lớp
+        dslop.nodes[dslop.n] = lopMoi;
+        dslop.n++;
+        
+        cout << " Them lop thanh cong!\n\n";
+    }
+}
 
 // ================= HÀM NẠP DỮ LIỆU GIẢ ĐỂ TEST =================
 void taoDuLieuGia(DsLOP &dslop) {
