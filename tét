@@ -1,0 +1,440 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+const int MAX_LOP = 10000;
+
+struct CHT_SV {
+    int id;
+    char chonluaSV;
+};
+struct NodeCHT_SV {
+    CHT_SV data;
+    NodeCHT_SV *next = NULL;
+};
+typedef NodeCHT_SV * PTRCTBT;
+
+struct DIEMTHI {
+    string MAMH;
+    float Diem;
+    PTRCTBT dsCTBT = NULL;
+};
+struct NodeDIEMTHI {
+    DIEMTHI data;
+    NodeDIEMTHI* Next = NULL;
+};
+typedef NodeDIEMTHI* PTRDIEMTHI;
+
+struct SINHVIEN {
+    string HO, TEN, MASV, PHAI, PASSWORD;
+    PTRDIEMTHI Diem = NULL;
+};
+struct NodeSINHVIEN {
+    SINHVIEN data;
+    NodeSINHVIEN* next = NULL;
+};
+typedef NodeSINHVIEN* PTRSINHVIEN;
+
+struct LOP {
+    string MALOP, TENLOP;
+    PTRSINHVIEN Dssv = NULL;
+};
+struct DsLOP {
+    int n = 0; // so luong lop
+    LOP* nodes[MAX_LOP];
+    DsLOP() {
+        for (int i = 0; i < MAX_LOP; i++) nodes[i] = NULL;
+    }
+};
+
+struct CAUHOI {
+    int id;
+    string NoiDung, a, b, c, d;
+    char DapAn;
+};
+struct Node_CAUHOI {
+    CAUHOI data;
+    Node_CAUHOI* next = NULL;
+};
+typedef Node_CAUHOI* PTRCAUHOI;
+
+struct MONHOC {
+    string MAMH, TENMH;
+    PTRCAUHOI dsCHT = NULL;
+};
+struct Node_MONHOC {
+    MONHOC data;
+    Node_MONHOC* right = NULL;
+    Node_MONHOC* left = NULL;
+};
+typedef Node_MONHOC* treeMH;
+
+// ===================================================================
+// CAU A: DANG NHAP
+// ===================================================================
+PTRSINHVIEN timKiemSV(DsLOP &dslop, string maSV) {
+    for (int i = 0; i < dslop.n; i++) {
+        PTRSINHVIEN p = dslop.nodes[i]->Dssv;
+        while (p != NULL) {
+            if (p->data.MASV == maSV) return p;
+            p = p->next;
+        }
+    }
+    return NULL;
+}
+
+int dangNhap(DsLOP &dslop, string &taiKhoanDangNhap) {
+    string user, pass;
+    cout << "Dang nhap\n";
+    cout << "Tai khoan (Ma SV/GV): "; cin >> user;
+    cout << "Mat khau: "; cin >> pass;
+
+    if (user == "GV" && pass == "GV") {
+        cout << "Dang nhap thanh cong voi quyen GIANG VIEN (Toan quyen).\n";
+        taiKhoanDangNhap = "GV";
+        return 1;
+    }
+    PTRSINHVIEN sv = timKiemSV(dslop, user);
+    if (sv != NULL && sv->data.PASSWORD == pass) {
+        cout << "Dang nhap thanh cong voi Sinh vien: "
+             << sv->data.HO << " " << sv->data.TEN << "\n";
+        taiKhoanDangNhap = sv->data.MASV;
+        return 2;
+    }
+    cout << "Dang nhap khong thanh cong\n";
+    return 0;
+}
+
+// ===================================================================
+// CAU B: NHAP DANH SACH LOP (mang con tro toi da MAX_LOP)
+// ===================================================================
+int timKiemLop(DsLOP &dslop, string maLop) {
+    for (int i = 0; i < dslop.n; i++) {
+        if (dslop.nodes[i]->MALOP == maLop) return i;
+    }
+    return -1;
+}
+
+void nhapLop(DsLOP &dslop) {
+    cout << "\n===== NHAP DANH SACH LOP =====\n";
+    while (true) {
+        if (dslop.n >= MAX_LOP) {
+            cout << "Danh sach lop da day!\n";
+            break;
+        }
+        string maLop;
+        cout << "Nhap Ma Lop (Nhap '0' de dung): ";
+        cin >> maLop;
+        if (maLop == "0") break;
+
+        if (timKiemLop(dslop, maLop) != -1) {
+            cout << "Ma lop '" << maLop << "' da ton tai!\n";
+            continue;
+        }
+
+        LOP* lopMoi = new LOP();
+        lopMoi->MALOP = maLop;
+        cout << "Nhap Ten Lop: ";
+        cin.ignore();
+        getline(cin, lopMoi->TENLOP);
+
+        dslop.nodes[dslop.n] = lopMoi;
+        dslop.n++;
+        cout << "Them lop thanh cong!\n\n";
+    }
+}
+
+// ===================================================================
+// CAU C: IN DANH SACH LOP
+// ===================================================================
+int demSoSV(LOP* lop) {
+    int dem = 0;
+    PTRSINHVIEN p = lop->Dssv;
+    while (p != NULL) {
+        dem++;
+        p = p->next;
+    }
+    return dem;
+}
+
+void inDsLop(DsLOP &dslop) {
+    cout << "\n===== DANH SACH LOP =====\n";
+    if (dslop.n == 0) {
+        cout << "Chua co lop nao!\n";
+        return;
+    }
+    cout.setf(ios::left);
+    cout.width(5);  cout << "STT";
+    cout.width(12); cout << "Ma Lop";
+    cout.width(30); cout << "Ten Lop";
+    cout << "So SV\n";
+    cout << "-----------------------------------------------------------\n";
+    for (int i = 0; i < dslop.n; i++) {
+        LOP* lop = dslop.nodes[i];
+        cout.width(5);  cout << i + 1;
+        cout.width(12); cout << lop->MALOP;
+        cout.width(30); cout << lop->TENLOP;
+        cout << demSoSV(lop) << "\n";
+    }
+}
+
+// ===================================================================
+// CAU D: NHAP SINH VIEN VAO 1 LOP
+// (Nhap ma lop truoc, sau do nhap tung sinh vien vao lop do)
+// ===================================================================
+bool trungMaSV(DsLOP &dslop, string maSV) {
+    return timKiemSV(dslop, maSV) != NULL;
+}
+
+void nhapSinhVienCuaLop(DsLOP &dslop) {
+    cout << "\n===== NHAP SINH VIEN VAO LOP =====\n";
+    if (dslop.n == 0) {
+        cout << "Chua co lop nao, vui long nhap lop truoc!\n";
+        return;
+    }
+    string maLop;
+    cout << "Nhap Ma Lop can them sinh vien: ";
+    cin >> maLop;
+
+    int viTri = timKiemLop(dslop, maLop);
+    if (viTri == -1) {
+        cout << "Khong tim thay lop '" << maLop << "'!\n";
+        return;
+    }
+    LOP* lop = dslop.nodes[viTri];
+
+    cout << "Nhap danh sach sinh vien cho lop " << lop->MALOP
+         << " - " << lop->TENLOP << "\n";
+
+    while (true) {
+        string maSV;
+        cout << "\nNhap Ma SV (Nhap '0' de dung): ";
+        cin >> maSV;
+        if (maSV == "0") break;
+
+        // Ma SV phai duy nhat tren toan he thong, khong chi trong 1 lop
+        if (trungMaSV(dslop, maSV)) {
+            cout << "Ma SV '" << maSV << "' da ton tai trong he thong!\n";
+            continue;
+        }
+
+        SINHVIEN sv;
+        sv.MASV = maSV;
+        cin.ignore();
+        cout << "Nhap Ho: ";       getline(cin, sv.HO);
+        cout << "Nhap Ten: ";      getline(cin, sv.TEN);
+        cout << "Nhap Phai: ";     getline(cin, sv.PHAI);
+        cout << "Nhap Password: "; getline(cin, sv.PASSWORD);
+
+        NodeSINHVIEN* nodeMoi = new NodeSINHVIEN();
+        nodeMoi->data = sv;
+        nodeMoi->next = lop->Dssv;   // them vao dau danh sach lien ket
+        lop->Dssv = nodeMoi;
+
+        cout << "Them sinh vien thanh cong!\n";
+    }
+}
+
+// ===================================================================
+// CAU E: NHAP MON HOC (cay nhi phan tim kiem theo MAMH)
+// Cho phep them / xoa / hieu chinh thong tin mon hoc
+// ===================================================================
+treeMH taoNodeMonHoc(string mamh, string tenmh) {
+    treeMH p = new Node_MONHOC();
+    p->data.MAMH = mamh;
+    p->data.TENMH = tenmh;
+    p->left = p->right = NULL;
+    return p;
+}
+
+// Them mon hoc vao cay (khong cho trung MAMH)
+bool themMonHoc(treeMH &root, string mamh, string tenmh) {
+    if (root == NULL) {
+        root = taoNodeMonHoc(mamh, tenmh);
+        return true;
+    }
+    if (mamh == root->data.MAMH) {
+        cout << "Ma mon hoc '" << mamh << "' da ton tai!\n";
+        return false;
+    }
+    if (mamh < root->data.MAMH)
+        return themMonHoc(root->left, mamh, tenmh);
+    else
+        return themMonHoc(root->right, mamh, tenmh);
+}
+
+// Tim mon hoc theo MAMH -> tra ve con tro node (hoac NULL neu khong thay)
+treeMH timMonHoc(treeMH root, string mamh) {
+    if (root == NULL) return NULL;
+    if (root->data.MAMH == mamh) return root;
+    if (mamh < root->data.MAMH) return timMonHoc(root->left, mamh);
+    return timMonHoc(root->right, mamh);
+}
+
+// Tim node nho nhat trong 1 cay con (dung khi xoa node co du 2 con)
+treeMH timMin(treeMH root) {
+    while (root->left != NULL) root = root->left;
+    return root;
+}
+
+// Xoa mon hoc theo MAMH khoi cay
+treeMH xoaMonHoc(treeMH root, string mamh, bool &daXoa) {
+    if (root == NULL) {
+        daXoa = false;
+        return NULL;
+    }
+    if (mamh < root->data.MAMH) {
+        root->left = xoaMonHoc(root->left, mamh, daXoa);
+    } else if (mamh > root->data.MAMH) {
+        root->right = xoaMonHoc(root->right, mamh, daXoa);
+    } else {
+        daXoa = true;
+        if (root->left == NULL) {
+            treeMH temp = root->right;
+            delete root;
+            return temp;
+        } else if (root->right == NULL) {
+            treeMH temp = root->left;
+            delete root;
+            return temp;
+        } else {
+            // Node co 2 con: thay bang phan tu nho nhat cua cay con phai
+            treeMH minRight = timMin(root->right);
+            root->data.MAMH = minRight->data.MAMH;
+            root->data.TENMH = minRight->data.TENMH;
+            root->data.dsCHT = minRight->data.dsCHT;
+            bool tmp;
+            root->right = xoaMonHoc(root->right, minRight->data.MAMH, tmp);
+        }
+    }
+    return root;
+}
+
+// In danh sach mon hoc theo thu tu MAMH tang dan (duyet LNR)
+void inDsMonHoc(treeMH root) {
+    if (root == NULL) return;
+    inDsMonHoc(root->left);
+    cout << "Ma MH: " << root->data.MAMH
+         << " | Ten MH: " << root->data.TENMH << "\n";
+    inDsMonHoc(root->right);
+}
+
+// Menu quan ly mon hoc: them / xoa / hieu chinh / in danh sach
+void nhapMonHoc(treeMH &dsmh) {
+    int chon;
+    do {
+        cout << "\n===== QUAN LY MON HOC =====\n";
+        cout << "1. Them mon hoc\n";
+        cout << "2. Xoa mon hoc\n";
+        cout << "3. Hieu chinh ten mon hoc\n";
+        cout << "4. In danh sach mon hoc\n";
+        cout << "0. Quay lai menu chinh\n";
+        cout << "Chon: ";
+        cin >> chon;
+
+        if (chon == 1) {
+            string mamh, tenmh;
+            cout << "Nhap Ma Mon Hoc: "; cin >> mamh;
+            cin.ignore();
+            cout << "Nhap Ten Mon Hoc: "; getline(cin, tenmh);
+            if (themMonHoc(dsmh, mamh, tenmh))
+                cout << "Them mon hoc thanh cong!\n";
+        }
+        else if (chon == 2) {
+            string mamh;
+            cout << "Nhap Ma Mon Hoc can xoa: "; cin >> mamh;
+            bool daXoa = false;
+            dsmh = xoaMonHoc(dsmh, mamh, daXoa);
+            if (daXoa) cout << "Xoa mon hoc thanh cong!\n";
+            else cout << "Khong tim thay mon hoc '" << mamh << "'!\n";
+        }
+        else if (chon == 3) {
+            string mamh;
+            cout << "Nhap Ma Mon Hoc can sua: "; cin >> mamh;
+            treeMH p = timMonHoc(dsmh, mamh);
+            if (p == NULL) {
+                cout << "Khong tim thay mon hoc '" << mamh << "'!\n";
+            } else {
+                cout << "Ten hien tai: " << p->data.TENMH << "\n";
+                cout << "Nhap Ten Mon Hoc moi: ";
+                cin.ignore();
+                getline(cin, p->data.TENMH);
+                cout << "Cap nhat thanh cong!\n";
+            }
+        }
+        else if (chon == 4) {
+            cout << "\n----- DANH SACH MON HOC (sap theo MAMH) -----\n";
+            if (dsmh == NULL) cout << "Chua co mon hoc nao!\n";
+            else inDsMonHoc(dsmh);
+        }
+    } while (chon != 0);
+}
+
+// ===================================================================
+// DU LIEU GIA DE TEST (da sua dung thu tu truong so voi ban goc)
+// ===================================================================
+void taoDuLieuGia(DsLOP &dslop) {
+    LOP* l1 = new LOP();
+    l1->MALOP = "D19CQCN01";
+    l1->TENLOP = "Lop Cong Nghe Thong Tin 1";
+
+    PTRSINHVIEN sv1 = new NodeSINHVIEN();
+    sv1->data = {"Nguyen Van", "A", "SV01", "Nam", "123456", NULL};
+    sv1->next = l1->Dssv;
+    l1->Dssv = sv1;
+
+    PTRSINHVIEN sv2 = new NodeSINHVIEN();
+    sv2->data = {"Tran Thi", "B", "SV02", "Nu", "654321", NULL};
+    sv2->next = l1->Dssv;
+    l1->Dssv = sv2;
+
+    dslop.nodes[dslop.n++] = l1;
+}
+
+// ===================================================================
+// MAIN: MENU CHUONG TRINH
+// ===================================================================
+int main() {
+    treeMH dsmh = NULL;
+    DsLOP dslop;
+    taoDuLieuGia(dslop);
+
+    string userDangNhap = "";
+    int quyen = 0;
+
+    cout << "=== DANG NHAP (CAU A) ===\n";
+    cout << "Thu voi:\n";
+    cout << " - Giang vien : User = GV   | Pass = GV\n";
+    cout << " - Sinh vien 1: User = SV01 | Pass = 123456\n";
+    cout << " - Sinh vien 2: User = SV02 | Pass = 654321\n";
+
+    while (quyen == 0) {
+        quyen = dangNhap(dslop, userDangNhap);
+    }
+
+    cout << "\n--> Dang nhap thanh cong, Quyen id = " << quyen
+         << " | Tai khoan: " << userDangNhap << endl;
+
+    int chon;
+    do {
+        cout << "\n===================== MENU CHINH =====================\n";
+        cout << "1. Nhap lop (Cau b)\n";
+        cout << "2. In danh sach lop (Cau c)\n";
+        cout << "3. Nhap sinh vien vao lop (Cau d)\n";
+        cout << "4. Nhap mon hoc (Cau e)\n";
+        cout << "0. Thoat\n";
+        cout << "Chon chuc nang: ";
+        cin >> chon;
+
+        switch (chon) {
+            case 1: nhapLop(dslop); break;
+            case 2: inDsLop(dslop); break;
+            case 3: nhapSinhVienCuaLop(dslop); break;
+            case 4: nhapMonHoc(dsmh); break;
+            case 0: cout << "Tam biet!\n"; break;
+            default: cout << "Lua chon khong hop le!\n";
+        }
+    } while (chon != 0);
+
+    return 0;
+}
